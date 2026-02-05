@@ -1,5 +1,7 @@
+// ! IMPORT THAT CARD https://reactbits.dev/components/lanyard
 import Stack from "./Stack";
 import DomeGallery from "./DomeGallery";
+import ElectricBorder from './ElectricBorder'
 
 export default function App() {
   const images = [
@@ -16,8 +18,7 @@ export default function App() {
         color: "white",
         minHeight: "100vh",
         fontFamily: "sans-serif",
-      }}
-    >
+      }}>
       {/* HEADER */}
       <header
         style={{
@@ -144,7 +145,18 @@ export default function App() {
           tecnológica y mantenimiento de infraestructuras digitales.
         </p>
       </section>
-
+      <ElectricBorder
+  color="#a51d2d"
+  speed={0.7}
+  chaos={0.25}
+  borderRadius={16} // Pásalo como prop directa, no dentro de style
+>
+  <div style={{ padding: '60px' }}>
+    <p style={{ margin: '6px 0 0', opacity: 0.8 }}>
+      A glowing, animated border wrapper.
+    </p>
+  </div>
+</ElectricBorder>
       {/* FOOTER */}
       <footer
         style={{
@@ -159,5 +171,6 @@ export default function App() {
         </p>
       </footer>
     </div>
+    
   );
 }
