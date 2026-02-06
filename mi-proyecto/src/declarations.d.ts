@@ -1,1 +1,1 @@
-declare module './components/FlowingMenu';
+declare module "*/FlowingMenu";

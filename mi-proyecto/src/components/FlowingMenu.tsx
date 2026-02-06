@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
