@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useCallback } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import './ElectricBorder.css';
 
 interface ElectricBorderProps {
@@ -289,7 +289,6 @@ const ElectricBorder: React.FC<ElectricBorderProps> = ({
     } as CSSProperties;
 
     return (
-        <body>
         <div ref={containerRef} className={`electric-border ${className ?? ''}`} style={{ ...vars, ...style }}>
             <div className="eb-canvas-container">
                 <canvas ref={canvasRef} className="eb-canvas" />
@@ -300,8 +299,7 @@ const ElectricBorder: React.FC<ElectricBorderProps> = ({
                 <div className="eb-background-glow" />
             </div>
             <div className="eb-content">{children}</div>
-            </div>
-            </body>
+        </div>
     );
 };
 
