@@ -1,496 +1,397 @@
-import { useEffect, useRef, useState } from "react";
+import React from 'react';
 import './App.css';
-import DomeGallery from "./DomeGallery";
-import ElectricBorder from './ElectricBorder';
-import Stack from "./Stack";
-import FlowingMenu from './components/FlowingMenu';
+import { motion, type Variants, type Transition, useScroll, useSpring } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import DomeGallery from '@/components/effects/dome-gallery/DomeGallery';
+import CurvedLoop from '@/components/effects/curved-loop/CurvedLoop';
+import Aurora from '@/components/effects/aurora/Aurora';
+import FlowingMenu from '@/components/effects/flowing-menu/FlowingMenu';
+import Stack from '@/components/layout/stack/Stack';
+import StatsSection from '@/components/layout/stats-section/StatsSection';
+import ParticleCanvas from '@/components/effects/particle-canvas/ParticleCanvas';
+import CustomCursor from '@/components/effects/custom-cursor/CustomCursor';
+import AnimatedSVGLines from '@/components/effects/animated-svg-lines/AnimatedSVGLines';
 
+// ─── BOOTSTRAP SVG ICONS ─────────────────────────────────────────
+const IconGlobe = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7 7 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5zm6.853 3.472A7 7 0 0 0 13.745 12H11.91a9.3 9.3 0 0 1-.64 1.539 7 7 0 0 1-.597.933M8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7 7 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/>
+  </svg>
+);
+
+const IconPhone = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+    <path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+  </svg>
+);
+
+const IconBrush = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M15.825.12a.5.5 0 0 1 .132.584c-1.53 3.43-4.743 8.17-7.095 10.64a6.1 6.1 0 0 1-2.373 1.534c-.018.227-.06.538-.16.868-.201.659-.667 1.479-1.708 1.74a8.1 8.1 0 0 1-3.078.132 4 4 0 0 1-.562-.135 1.4 1.4 0 0 1-.466-.247.7.7 0 0 1-.204-.288.62.62 0 0 1 .004-.443c.095-.245.316-.38.461-.452.394-.197.625-.453.867-.826.095-.144.184-.297.287-.472l.117-.198c.151-.255.326-.54.546-.848.528-.739 1.201-.925 1.746-.896q.19.012.348.048c.062-.172.142-.38.238-.608.261-.619.658-1.419 1.187-2.069 2.176-2.67 6.18-6.206 9.117-8.104a.5.5 0 0 1 .596.04"/>
+  </svg>
+);
+
+const IconCloud = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383"/>
+  </svg>
+);
+
+const IconRobot = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5M3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.6 26.6 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.93.93 0 0 1-.765.935c-.845.147-2.34.346-4.235.346s-3.39-.2-4.235-.346A.93.93 0 0 1 3 9.219zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a25 25 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25 25 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.134"/>
+    <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2zM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5"/>
+  </svg>
+);
+
+const IconLightbulb = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a2 2 0 0 0-.453-.618A5.98 5.98 0 0 1 2 6m6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1"/>
+  </svg>
+);
+
+const serviceIcons: Record<string, React.ReactElement> = {
+  '01': <IconGlobe />,
+  '02': <IconPhone />,
+  '03': <IconBrush />,
+  '04': <IconCloud />,
+  '05': <IconRobot />,
+  '06': <IconLightbulb />,
+};
+
+// ─── DATA ────────────────────────────────────────────────────────
+const images: string[] = [
+  "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format",
+  "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format",
+  "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format",
+  "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format",
+];
+
+interface FlowingMenuItem { link: string; text: string; image: string; }
+const menuItems = [
+  { link: '#services', text: 'Servicios', image: 'https://picsum.photos/600/400?random=1' },
+  { link: '#about',   text: 'Nosotros',  image: 'https://picsum.photos/600/400?random=2' },
+  { link: '#contact', text: 'Contacto',  image: 'https://picsum.photos/600/400?random=3' },
+  { link: '#gallery', text: 'Proyectos', image: 'https://picsum.photos/600/400?random=4' },
+] as FlowingMenuItem[];
+
+const services = [
+  { id: '01', title: 'Desarrollo Web',          desc: 'Sitios modernos, responsivos y optimizados para SEO desde cero.' },
+  { id: '02', title: 'Apps Móviles',            desc: 'Nativas y multiplataforma para iOS y Android.' },
+  { id: '03', title: 'Diseño UI/UX',            desc: 'Interfaces intuitivas con experiencias de usuario excepcionales.' },
+  { id: '04', title: 'Cloud & DevOps',          desc: 'Infraestructura escalable y despliegue continuo en la nube.' },
+  { id: '05', title: 'Inteligencia Artificial', desc: 'Soluciones de IA y ML para automatizar procesos clave.' },
+  { id: '06', title: 'Consultoría Tech',        desc: 'Asesoramiento estratégico para tu transformación digital.' },
+];
+
+// ─── ANIMATION VARIANTS ──────────────────────────────────────────
+const cubicEase = [0.16, 1, 0.3, 1] as [number, number, number, number];
+const smoothTransition: Transition = { duration: 0.7, ease: cubicEase };
+
+const fadeUp: Variants    = { hidden: { opacity: 0, y: 60 },       show: { opacity: 1, y: 0,    transition: smoothTransition } };
+const fadeLeft: Variants  = { hidden: { opacity: 0, x: -50 },      show: { opacity: 1, x: 0,    transition: smoothTransition } };
+const fadeRight: Variants = { hidden: { opacity: 0, x: 50 },       show: { opacity: 1, x: 0,    transition: smoothTransition } };
+const scaleIn: Variants   = { hidden: { opacity: 0, scale: 0.85 }, show: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: cubicEase } } };
+const staggerContainer: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
+const letterVariant: Variants = {
+  hidden: { opacity: 0, y: 40, rotateX: -90 },
+  show:   { opacity: 1, y: 0,  rotateX: 0, transition: { duration: 0.5, ease: cubicEase } },
+};
+const inView = { initial: 'hidden', whileInView: 'show', viewport: { once: true, amount: 0.2 } };
+
+// ─── SPLIT TEXT ───────────────────────────────────────────────────
+function SplitText({ text, className }: { text: string; className?: string }) {
+  return (
+    <motion.span
+      className={className}
+      style={{ display: 'inline-block', perspective: 800 }}
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true }}
+    >
+      {text.split('').map((char, i) => (
+        <motion.span key={i} variants={letterVariant}
+          style={{ display: 'inline-block', whiteSpace: char === ' ' ? 'pre' : 'normal' }}>
+          {char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+}
+
+// ─── GLITCH TEXT ─────────────────────────────────────────────────
+function GlitchText({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
+    let frame = 0;
+    let raf: number;
+    const animate = () => {
+      frame++;
+      if (frame > 20) return;
+      el.textContent = text.split('').map((char, i) => {
+        if (char === ' ') return ' ';
+        if (i < frame * 0.8) return char;
+        return chars[Math.floor(Math.random() * chars.length)];
+      }).join('');
+      raf = requestAnimationFrame(animate);
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { frame = 0; animate(); observer.disconnect(); }
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => { cancelAnimationFrame(raf); observer.disconnect(); };
+  }, [text]);
+  return <span ref={ref}>{text}</span>;
+}
+
+// ─── COMPONENT ───────────────────────────────────────────────────
 export default function App() {
-    const [scrollY, setScrollY] = useState(0);
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const rafRef = useRef<number | null>(null);
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
-    useEffect(() => {
-        let ticking = false;
+  return (
+    <div className="app">
+      <CustomCursor />
+      <motion.div className="scroll-progress" style={{ scaleX }} />
 
-        const handleScroll = () => {
-            if (!ticking) {
-                rafRef.current = window.requestAnimationFrame(() => {
-                    setScrollY(window.scrollY);
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        };
+      {/* ── NAVBAR ── */}
+      <motion.nav className="navbar"
+        initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="navbar__logo">NOVA<span>TECH</span></div>
+        <ul className="navbar__links">
+          <li><a href="#services">Servicios</a></li>
+          <li><a href="#gallery">Proyectos</a></li>
+          <li><a href="#about">Nosotros</a></li>
+          <li><a href="#contact">Contacto</a></li>
+        </ul>
+        <a href="#contact" className="navbar__cta">Hablemos →</a>
+      </motion.nav>
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
+      {/* ── HERO ── */}
+      <section className="hero" id="home">
+        <div className="hero__bg" />
+        <div className="hero__grid" />
+        <ParticleCanvas />
 
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            if (rafRef.current) {
-                window.cancelAnimationFrame(rafRef.current);
-            }
-        };
-    }, []);
+        <motion.div className="hero__eyebrow"
+          initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
+          <div className="hero__eyebrow-line" />
+          <span className="hero__eyebrow-text">Soluciones Tecnológicas · 2026</span>
+        </motion.div>
 
-    // Intersection Observer para animaciones optimizadas
-    useEffect(() => {
-        // Solo ejecutar si el usuario no prefiere movimiento reducido
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        <h1 className="hero__title">
+          <div><SplitText text="INNOVA" /></div>
+          <div>
+            <motion.em initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7, ease: cubicEase, delay: 0.5 }}>SIN</motion.em>
+          </div>
+          <div>
+            <motion.span className="outline" initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7, ease: cubicEase, delay: 0.7 }}>LÍMITES</motion.span>
+          </div>
+        </h1>
 
-        if (prefersReducedMotion) {
-            // Si prefiere movimiento reducido, mostrar todo inmediatamente
-            const elements = document.querySelectorAll('.scroll-reveal');
-            elements.forEach((el) => el.classList.add('animate-in'));
-            return;
-        }
+        <motion.p className="hero__subtitle"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.9 }}>
+          Transformamos ideas complejas en productos digitales de alta precisión.
+          Tecnología de vanguardia al servicio de tu negocio.
+        </motion.p>
 
-        observerRef.current = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry, index) => {
-                    if (entry.isIntersecting) {
-                        // Agregar un pequeño delay escalonado para efecto más suave
-                        setTimeout(() => {
-                            entry.target.classList.add('animate-in');
-                            // Dejar de observar después de animar (optimización)
-                            observerRef.current?.unobserve(entry.target);
-                        }, index * 50); // 50ms de delay entre cada elemento
-                    }
-                });
-            },
-            {
-                threshold: 0.15, // Activar cuando el 15% del elemento es visible
-                rootMargin: '0px 0px -80px 0px' // Activar un poco antes de que entre en viewport
-            }
-        );
+        <motion.div className="hero__actions"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.1 }}>
+          <a href="#services" className="btn-primary">Ver servicios</a>
+          <a href="#gallery"  className="btn-ghost">Nuestros proyectos →</a>
+        </motion.div>
 
-        // Observar todos los elementos con clase 'scroll-reveal'
-        const elements = document.querySelectorAll('.scroll-reveal');
-        elements.forEach((el) => observerRef.current?.observe(el));
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, []);
-
-    // Imágenes para el Stack
-    const portfolioImages = [
-        "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format",
-        "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format",
-        "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format",
-        "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format",
-    ];
-
-    // Configuración del menú
-    const menuItems: Array<{ link: string; text: string; image: string }> = [
-        { link: '#inicio', text: 'Inicio', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format' },
-        { link: '#servicios', text: 'Servicios', image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=600&auto=format' },
-        { link: '#galeria', text: 'Galería', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=600&auto=format' },
-        { link: '#contacto', text: 'Contacto', image: 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=600&auto=format' }
-    ];
-
-    return (
-        <div className="app-container">
-            {/* HERO SECTION */}
-            <section id="inicio" className="hero-section">
-                <div
-                    className="hero-background"
-                    style={{
-                        transform: `translateY(${scrollY * 0.5}px)`,
-                        opacity: 1 - scrollY / 600
-                    }}
-                />
-                <div className="hero-content">
-                    <h1 className="hero-title">NovaTech Solutions</h1>
-                    <p className="hero-subtitle">
-                        Transformando ideas en experiencias digitales extraordinarias
-                    </p>
-                    <div className="hero-cta">
-                        <a href="#servicios" className="btn-primary">Explorar Servicios</a>
-                        <a href="#contacto" className="btn-secondary">Contactar</a>
-                    </div>
-                </div>
-                <div className="scroll-indicator">
-                    <span>Scroll</span>
-                    <div className="scroll-arrow"></div>
-                </div>
-            </section>
-
-            {/* NAVIGATION MENU */}
-            <nav className="flowing-menu-section">
-                <FlowingMenu
-                    items={menuItems}
-                    marqueeBgColor="#00d4ff"
-                    marqueeTextColor="#0a0a0a"
-                    textColor="#ffffff"
-                    bgColor="#0a0a0a"
-                    borderColor="#333"
-                    speed={20}
-                />
-            </nav>
-
-            {/* ABOUT SECTION */}
-            <section id="nosotros" className="about-section">
-                <div className="container">
-                    <h2 className="section-title scroll-reveal">Quiénes Somos</h2>
-                    <p className="section-description scroll-reveal">
-                        Somos una empresa joven enfocada en crear soluciones eficientes, escalables y fáciles de mantener
-                    </p>
-
-                    <div className="about-content scroll-reveal">
-                        <div className="about-text">
-                            <p>
-                                En <strong>NovaTech Solutions</strong> ofrecemos servicios de desarrollo web, consultoría tecnológica
-                                y mantenimiento de infraestructuras digitales. Nuestro equipo combina experiencia técnica con
-                                creatividad para entregar proyectos que superan las expectativas.
-                            </p>
-                            <p>
-                                Trabajamos con las tecnologías más modernas del mercado, desde React y Next.js hasta Three.js
-                                y WebGL, para crear experiencias web únicas que destacan en el mercado digital.
-                            </p>
-                        </div>
-
-                        <div className="stats-grid">
-                            <div className="stat-item scroll-reveal" style={{ transitionDelay: '0.1s' }}>
-                                <div className="stat-number">50+</div>
-                                <div className="stat-label">Proyectos Completados</div>
-                            </div>
-                            <div className="stat-item scroll-reveal" style={{ transitionDelay: '0.2s' }}>
-                                <div className="stat-number">30+</div>
-                                <div className="stat-label">Clientes Satisfechos</div>
-                            </div>
-                            <div className="stat-item scroll-reveal" style={{ transitionDelay: '0.3s' }}>
-                                <div className="stat-number">5+</div>
-                                <div className="stat-label">Años de Experiencia</div>
-                            </div>
-                            <div className="stat-item scroll-reveal" style={{ transitionDelay: '0.4s' }}>
-                                <div className="stat-number">99%</div>
-                                <div className="stat-label">Satisfacción del Cliente</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* SERVICES SECTION */}
-            <section id="servicios" className="services-section">
-                <div className="container">
-                    <h2 className="section-title scroll-animate-zoom-in scroll-reveal">Nuestros Servicios</h2>
-                    <p className="section-description scroll-animate-slide-up scroll-reveal">
-                        Soluciones tecnológicas de vanguardia para impulsar tu negocio
-                    </p>
-
-                    <div className="services-grid">
-                        <div className="scroll-animate-scale scroll-reveal" style={{ transitionDelay: '0.1s' }}>
-                            <ElectricBorder color="#00d4ff" speed={0.8} chaos={0.2} borderRadius={20}>
-                                <div className="service-card">
-                                    <div className="service-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M2.04 4.326c.325 1.329 2.532 2.54 3.717 3.19.48.263.793.434.743.484q-.121.12-.242.234c-.416.396-.787.749-.758 1.266.035.634.618.824 1.214 1.017.577.188 1.168.38 1.286.983.082.417-.075.988-.22 1.52-.215.782-.406 1.48.22 1.48 1.5-.5 3.798-3.186 4-5 .138-1.243-2-2-3.5-2.5-.478-.16-.755.081-.99.284-.172.15-.322.279-.51.216-.445-.148-2.5-2-1.5-2.5.78-.39.952-.171 1.227.182.078.099.163.208.273.318.609.304.662-.132.723-.633.039-.322.081-.671.277-.867.434-.434 1.265-.791 2.028-1.12.712-.306 1.365-.587 1.579-.88A7 7 0 1 1 2.04 4.327Z" />
-                                        </svg>
-                                    </div>
-                                    <h3>Desarrollo Web</h3>
-                                    <p>Aplicaciones web modernas con React, Next.js y las últimas tecnologías</p>
-                                </div>
-                            </ElectricBorder>
-                        </div>
-
-                        <div className="scroll-animate-bounce scroll-reveal" style={{ transitionDelay: '0.2s' }}>
-                            <ElectricBorder color="#a51d2d" speed={0.7} chaos={0.25} borderRadius={20}>
-                                <div className="service-card">
-                                    <div className="service-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07M8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
-                                        </svg>
-                                    </div>
-                                    <h3>Diseño UI/UX</h3>
-                                    <p>Interfaces intuitivas y experiencias de usuario excepcionales</p>
-                                </div>
-                            </ElectricBorder>
-                        </div>
-
-                        <div className="scroll-animate-rotate scroll-reveal" style={{ transitionDelay: '0.3s' }}>
-                            <ElectricBorder color="#7c3aed" speed={0.9} chaos={0.18} borderRadius={20}>
-                                <div className="service-card">
-                                    <div className="service-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M6.5 0a.5.5 0 0 0 0 1H7v1.07A7.001 7.001 0 0 0 8 16a7 7 0 0 0 5.29-11.584l.013-.012.354-.354.353.354a.5.5 0 1 0 .707-.707l-1.414-1.415a.5.5 0 1 0-.707.707l.354.354-.354.354-.012.012A6.97 6.97 0 0 0 9 2.071V1h.5a.5.5 0 0 0 0-1zm2 5.6V9a.5.5 0 0 1-.5.5H4.5a.5.5 0 0 1 0-1h3V5.6a.5.5 0 1 1 1 0" />
-                                        </svg>
-                                    </div>
-                                    <h3>Animaciones 3D</h3>
-                                    <p>Efectos visuales impactantes con Three.js y WebGL</p>
-                                </div>
-                            </ElectricBorder>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* TECHNOLOGIES SECTION */}
-            <section className="technologies-section parallax-bg-section parallax-bg-1">
-                <div className="container">
-                    <h2 className="section-title scroll-animate-flip scroll-reveal">Tecnologías que Dominamos</h2>
-                    <p className="section-description scroll-animate-shimmer scroll-reveal">
-                        Trabajamos con las herramientas más modernas y eficientes del mercado
-                    </p>
-
-                    <div className="tech-grid">
-                        <div className="tech-item scroll-animate-slide-left scroll-reveal" style={{ transitionDelay: '0.1s' }}>
-                            <div className="tech-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#61DAFB" viewBox="0 0 16 16">
-                                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
-                                    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z" />
-                                </svg>
-                            </div>
-                            <h4>React</h4>
-                            <p>Biblioteca líder para interfaces modernas</p>
-                        </div>
-
-                        <div className="tech-item scroll-animate-slide-right scroll-reveal" style={{ transitionDelay: '0.2s' }}>
-                            <div className="tech-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#000000" viewBox="0 0 16 16">
-
-            {/* PORTFOLIO SECTION */}
-            <section className="portfolio-section">
-                <div className="container">
-                    <h2 className="section-title scroll-reveal">Portfolio Destacado</h2>
-                    <p className="section-description scroll-reveal">
-                        Explora nuestros proyectos más recientes
-                    </p>
-
-                    <div className="portfolio-showcase">
-                        <div className="stack-container-wrapper scroll-reveal" style={{ transitionDelay: '0.1s' }}>
-                            <Stack
-                                randomRotation={true}
-                                autoplay={true}
-                                autoplayDelay={3000}
-                                pauseOnHover={true}
-                                cards={portfolioImages.map((src, i) => (
-                                    <img
-                                        key={i}
-                                        src={src}
-                                        alt={`Proyecto ${i + 1}`}
-                                        className="portfolio-image"
-                                    />
-                                ))}
-                            />
-                        </div>
-                        <div className="portfolio-info scroll-reveal" style={{ transitionDelay: '0.2s' }}>
-                            <h3>Proyectos Innovadores</h3>
-                            <p>Cada proyecto es una obra maestra digital, diseñada con precisión y pasión.</p>
-                            <ul className="features-list">
-                                <li className="feature-item">✓ Diseño responsive</li>
-                                <li className="feature-item">✓ Optimización de rendimiento</li>
-                                <li className="feature-item">✓ Experiencia de usuario premium</li>
-                                <li className="feature-item">✓ Código limpio y mantenible</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* TESTIMONIALS SECTION */}
-            <section className="testimonials-section">
-                <div className="container">
-                    <h2 className="section-title scroll-reveal">Lo Que Dicen Nuestros Clientes</h2>
-                    <p className="section-description scroll-reveal">
-                        Testimonios reales de empresas que confiaron en nosotros
-                    </p>
-
-                    <div className="testimonials-grid">
-                        <div className="testimonial-card scroll-reveal" style={{ transitionDelay: '0.1s' }}>
-                            <div className="testimonial-stars">★★★★★</div>
-                            <p className="testimonial-text">
-                                "El equipo de NovaTech transformó completamente nuestra presencia digital.
-                                La atención al detalle y la calidad del código son excepcionales."
-                            </p>
-                            <div className="testimonial-author">
-                                <div className="author-avatar">JM</div>
-                                <div className="author-info">
-                                    <div className="author-name">Juan Martínez</div>
-                                    <div className="author-role">CEO, TechStart Inc.</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="testimonial-card scroll-reveal" style={{ transitionDelay: '0.2s' }}>
-                            <div className="testimonial-stars">★★★★★</div>
-                            <p className="testimonial-text">
-                                "Profesionales, rápidos y con ideas innovadoras. Superaron nuestras expectativas
-                                en cada fase del proyecto. Totalmente recomendados."
-                            </p>
-                            <div className="testimonial-author">
-                                <div className="author-avatar">MG</div>
-                                <div className="author-info">
-                                    <div className="author-name">María García</div>
-                                    <div className="author-role">Directora de Marketing, Digital Plus</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="testimonial-card scroll-reveal" style={{ transitionDelay: '0.3s' }}>
-                            <div className="testimonial-stars">★★★★★</div>
-                            <p className="testimonial-text">
-                                "La experiencia de usuario que crearon para nuestra plataforma es increíble.
-                                Nuestros clientes están encantados con la nueva interfaz."
-                            </p>
-                            <div className="testimonial-author">
-                                <div className="author-avatar">CR</div>
-                                <div className="author-info">
-                                    <div className="author-name">Carlos Rodríguez</div>
-                                    <div className="author-role">CTO, InnovateLab</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* GALLERY SECTION */}
-            <section id="galeria" className="gallery-section">
-                <div className="container-full">
-                    <h2 className="section-title scroll-reveal">Galería Inmersiva 360°</h2>
-                    <p className="section-description scroll-reveal">
-                        Explora nuestra galería interactiva en 3D
-                    </p>
-                    <div className="gallery-wrapper scroll-reveal" style={{ transitionDelay: '0.1s' }}>
-                        <DomeGallery
-                            segments={34}
-                            grayscale={false}
-                            overlayBlurColor="#0a0a0a"
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* CONTACT SECTION */}
-            <section id="contacto" className="contact-section">
-                <div className="container">
-                    <h2 className="section-title scroll-reveal">Contacto</h2>
-                    <p className="section-description scroll-reveal">
-                        Escríbenos a contacto@novatech.com para más información
-                    </p>
-
-                    <div className="contact-wrapper scroll-reveal">
-                        <div className="contact-info-side">
-                            <h3>Información de Contacto</h3>
-                            <p>Estamos aquí para ayudarte a llevar tu proyecto al siguiente nivel.</p>
-
-                            <div className="contact-details">
-                                <div className="contact-detail-item">
-                                    <div className="contact-icon-wrapper">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4>Email</h4>
-                                        <p>contacto@novatech.com</p>
-                                    </div>
-                                </div>
-
-                                <div className="contact-detail-item">
-                                    <div className="contact-icon-wrapper">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4>Teléfono</h4>
-                                        <p>+1 (555) 123-4567</p>
-                                    </div>
-                                </div>
-
-                                <div className="contact-detail-item">
-                                    <div className="contact-icon-wrapper">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4>Ubicación</h4>
-                                        <p>Silicon Valley, CA</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="social-links">
-                                <a href="#" className="social-link" aria-label="GitHub">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
-                                    </svg>
-                                </a>
-                                <a href="#" className="social-link" aria-label="LinkedIn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z" />
-                                    </svg>
-                                </a>
-                                <a href="#" className="social-link" aria-label="Twitter">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z" />
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-
-                        <div className="contact-form-side">
-                            <ElectricBorder color="#00d4ff" speed={0.6} chaos={0.3} borderRadius={16}>
-                                <form className="contact-form">
-                                    <div className="form-group">
-                                        <label htmlFor="name">Nombre</label>
-                                        <input type="text" id="name" name="name" placeholder="Tu nombre" required />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="email">Email</label>
-                                        <input type="email" id="email" name="email" placeholder="tu@email.com" required />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="subject">Asunto</label>
-                                        <input type="text" id="subject" name="subject" placeholder="¿En qué podemos ayudarte?" required />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="message">Mensaje</label>
-                                        <textarea id="message" name="message" rows={5} placeholder="Cuéntanos sobre tu proyecto..." required></textarea>
-                                    </div>
-
-                                    <button type="submit" className="btn-submit">Enviar Mensaje</button>
-                                </form>
-                            </ElectricBorder>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* FOOTER */}
-            <footer className="footer">
-                <div className="container">
-                    <div className="footer-content">
-                        <div className="footer-brand">
-                            <h3>NovaTech Solutions</h3>
-                            <p>Innovación sin límites</p>
-                        </div>
-                        <div className="footer-links">
-                            <a href="#inicio">Inicio</a>
-                            <a href="#servicios">Servicios</a>
-                            <a href="#galeria">Galería</a>
-                            <a href="#contacto">Contacto</a>
-                        </div>
-                        <div className="footer-social">
-                            <a href="#" aria-label="Twitter">𝕏</a>
-                            <a href="#" aria-label="LinkedIn">in</a>
-                            <a href="#" aria-label="GitHub">⚡</a>
-                        </div>
-                    </div>
-                    <div className="footer-bottom">
-                        <p>© 2026 NovaTech Solutions. Todos los derechos reservados.</p>
-                    </div>
-                </div>
-            </footer>
+        <div className="hero__scroll">
+          <div className="hero__scroll-line" />
+          <span className="hero__scroll-text">Scroll</span>
         </div>
-    );
+      </section>
+
+      {/* ── SVG LINES DIVIDER ── */}
+      <div style={{ padding: '0 48px', background: 'var(--bg-deep)' }}>
+        <AnimatedSVGLines />
+      </div>
+
+      {/* ── FLOWING MENU ── */}
+      <motion.section className="menu-section" variants={fadeUp} {...inView}>
+        <FlowingMenu items={menuItems as never[]} marqueeBgColor="#c0392b" />
+      </motion.section>
+
+      {/* ── STATS ── */}
+      <motion.div className="stats-wrapper" variants={fadeUp} {...inView}>
+        <StatsSection />
+      </motion.div>
+
+      {/* ── MARQUEE ── */}
+      <motion.section className="marquee-section" variants={scaleIn} {...inView}>
+        <CurvedLoop
+          marqueeText="✦ NOVATECH · INNOVACIÓN · PRECISIÓN · TECNOLOGÍA · DISEÑO · "
+          speed={1.2} curveAmount={-120} direction="right" interactive
+          className="curved-loop-display"
+        />
+      </motion.section>
+
+      {/* ── SERVICES ── */}
+      <section className="services-section" id="services">
+        <div className="services-header">
+          <motion.div variants={fadeLeft} {...inView}>
+            <div className="section-label">
+              <div className="section-label__line" />
+              <span className="section-label__text">Qué hacemos</span>
+            </div>
+            <h2 className="section-title">
+              <GlitchText text="NUESTROS" /><br />
+              <GlitchText text="SERVICIOS" />
+            </h2>
+          </motion.div>
+          <motion.p className="services-header__desc" variants={fadeRight} {...inView}>
+            Soluciones end-to-end diseñadas para escalar tu negocio.
+            Desde el concepto hasta el despliegue en producción.
+          </motion.p>
+        </div>
+
+        <motion.div className="services-grid" variants={staggerContainer} {...inView}>
+          {services.map((s) => (
+            <motion.div key={s.id} className="service-card" variants={fadeUp}>
+              <div className="service-card__number">{s.id}</div>
+              <div className="service-card__icon">{serviceIcons[s.id]}</div>
+              <h3 className="service-card__title">{s.title}</h3>
+              <p className="service-card__desc">{s.desc}</p>
+              <div className="service-card__accent" />
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* ── SVG LINES DIVIDER 2 ── */}
+      <div style={{ padding: '0 48px', background: 'var(--bg-card)' }}>
+        <AnimatedSVGLines />
+      </div>
+
+      {/* ── GALLERY ── */}
+      <section className="gallery-section" id="gallery">
+        <motion.div className="gallery-header" variants={fadeUp} {...inView}>
+          <div className="section-label">
+            <div className="section-label__line" />
+            <span className="section-label__text">Proyectos</span>
+          </div>
+          <h2 className="section-title">
+            <SplitText text="VISTA" /><br />
+            <SplitText text="PANORÁMICA" />
+          </h2>
+        </motion.div>
+        <motion.div className="gallery-dome" variants={scaleIn} {...inView}>
+          <DomeGallery segments={34} grayscale={false} />
+        </motion.div>
+      </section>
+
+      {/* ── STACK + COPY ── */}
+      <section className="stack-section" id="about">
+        <motion.div className="stack-section__copy" variants={fadeLeft} {...inView}>
+          <div className="section-label">
+            <div className="section-label__line" />
+            <span className="section-label__text">Quiénes somos</span>
+          </div>
+          <h2 className="section-title">
+            <GlitchText text="EQUIPO" /><br />
+            <GlitchText text="EXPERTO" />
+          </h2>
+          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+            viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.2 }}>
+            Más de 15 años construyendo productos digitales que marcan la diferencia.
+            Un equipo multidisciplinar comprometido con la excelencia técnica.
+          </motion.p>
+          <a href="#contact" className="btn-primary">Trabaja con nosotros</a>
+        </motion.div>
+
+        <motion.div style={{ width: 340, height: 340 }} variants={fadeRight} {...inView}>
+          <Stack
+            randomRotation={true}
+            cards={images.map((src, i) => (
+              <img key={i} src={src} alt={`project-${i + 1}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
+            ))}
+          />
+        </motion.div>
+      </section>
+
+      {/* ── AURORA CTA ── */}
+      <motion.section className="aurora-section" id="contact" variants={scaleIn} {...inView}>
+        <Aurora />
+        <motion.div className="aurora-content" variants={fadeUp} {...inView}>
+
+          {/* Número grande decorativo */}
+          <motion.span
+            className="aurora-deco-number"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.2 }}
+          >
+            01
+          </motion.span>
+
+          <div className="section-label" style={{ justifyContent: 'center' }}>
+            <div className="section-label__line" />
+            <span className="section-label__text">Siguiente paso</span>
+            <div className="section-label__line" />
+          </div>
+
+          <h3>¿Empezamos<br />algo grande?</h3>
+
+          <p>
+            Cuéntanos tu proyecto y construiremos juntos<br />
+            la solución que tu negocio necesita.
+          </p>
+
+          {/* Cards de contacto */}
+          <div className="aurora-cards">
+            <a href="mailto:hola@novatech.com" className="aurora-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+              </svg>
+              <span>hola@novatech.com</span>
+            </a>
+            <a href="tel:+34600000000" className="aurora-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/>
+              </svg>
+              <span>+34 600 000 000</span>
+            </a>
+            <a href="#" className="aurora-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"/>
+              </svg>
+              <span>LinkedIn</span>
+            </a>
+          </div>
+
+          <a href="mailto:hola@novatech.com" className="btn-primary" style={{ marginTop: '16px' }}>
+            Enviar proyecto →
+          </a>
+
+        </motion.div>
+      </motion.section>
+
+      {/* ── FOOTER ── */}
+      <motion.footer className="footer" variants={fadeUp} {...inView}>
+        <div>
+          <div className="footer__brand">NOVA<span>TECH</span></div>
+          <p className="footer__copy">© 2026 NovaTech Solutions — Hecho con React + Vite</p>
+        </div>
+        <ul className="footer__links">
+          <li><a href="#services">Servicios</a></li>
+          <li><a href="#gallery">Proyectos</a></li>
+          <li><a href="#contact">Contacto</a></li>
+        </ul>
+      </motion.footer>
+    </div>
+  );
 }

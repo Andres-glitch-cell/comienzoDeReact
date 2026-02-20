@@ -1,0 +1,24 @@
+.curved-loop {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.curved-loop svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.curved-loop text {
+  font-family: var(--font-display, 'Unbounded', sans-serif);
+  font-weight: 900;
+  font-size: 1.4rem;
+  fill: var(--white, #f0ede8);
+  letter-spacing: 0.05em;
+}
+
+.curved-loop-display text {
+  font-family: var(--font-display, 'Unbounded', sans-serif) !important;
+  font-weight: 900 !important;
+}
