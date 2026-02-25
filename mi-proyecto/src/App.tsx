@@ -218,6 +218,10 @@ export default function App() {
       <div style={{ padding: '0 48px', background: 'var(--bg-deep)' }}>
         <AnimatedSVGLines />
       </div>
+      {/* ── SVG LINES DIVIDER ── */}
+      <div style={{ padding: '0 48px', background: 'var(--bg-deep)' }}>
+        <AnimatedSVGLines />
+      </div>
 
       {/* ── FLOWING MENU ── */}
       <motion.section className="menu-section" variants={fadeUp} {...inView}>
@@ -274,7 +278,27 @@ export default function App() {
       <div style={{ padding: '0 48px', background: 'var(--bg-card)' }}>
         <AnimatedSVGLines />
       </div>
+      {/* ── SVG LINES DIVIDER 2 ── */}
+      <div style={{ padding: '0 48px', background: 'var(--bg-card)' }}>
+        <AnimatedSVGLines />
+      </div>
 
+      {/* ── GALLERY ── */}
+      <section className="gallery-section" id="gallery">
+        <motion.div className="gallery-header" variants={fadeUp} {...inView}>
+          <div className="section-label">
+            <div className="section-label__line" />
+            <span className="section-label__text">Proyectos</span>
+          </div>
+          <h2 className="section-title">
+            <SplitText text="VISTA" /><br />
+            <SplitText text="PANORÁMICA" />
+          </h2>
+        </motion.div>
+        <motion.div className="gallery-dome" variants={scaleIn} {...inView}>
+          <DomeGallery segments={34} grayscale={false} />
+        </motion.div>
+      </section>
       {/* ── GALLERY ── */}
       <section className="gallery-section" id="gallery">
         <motion.div className="gallery-header" variants={fadeUp} {...inView}>
@@ -395,3 +419,4 @@ export default function App() {
     </div>
   );
 }
+
