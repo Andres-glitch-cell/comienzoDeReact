@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { motion } from 'framer-motion';
 import { AnimatedNumber } from '@/components/ui/animated-number';
+=======
+import { AnimatedNumber } from '@/components/layout/stats-section/AnimatedNumber';
+import { motion } from 'framer-motion';
+>>>>>>> 2097040bc4325595185f7e53ccb238f2c5e73e45
 
 interface Stat {
   value: number;

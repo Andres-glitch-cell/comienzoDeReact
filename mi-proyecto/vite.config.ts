@@ -11,9 +11,11 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ["react", "react-dom"],
   },
 
   server: {
+<<<<<<< HEAD
     host: '0.0.0.0',     // Permite acceso desde fuera (necesario en AWS, VM, red local, etc.)
     port: 5173,          // Puerto fijo
     strictPort: true,    // No cambia de puerto si 5173 está ocupado → falla explícitamente
@@ -27,3 +29,10 @@ export default defineConfig({
     sourcemap: true, // útil para debug en producción
   },
 });
+=======
+    host: '0.0.0.0', // Escucha en todas las interfaces, incluyendo la IP de AWS
+    port: 5173,      // El puerto que abrirás en el Security Group
+    strictPort: true // Evita que Vite intente usar otro puerto si este está ocupado
+  }
+})
+>>>>>>> 2097040bc4325595185f7e53ccb238f2c5e73e45

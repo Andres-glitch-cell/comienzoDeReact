@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode } from "react";
 // Importamos motion y los hooks de animación
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import type { PanInfo } from "framer-motion";
 import "./Stack.css";
 
 // Definimos qué datos necesita recibir CardRotate
@@ -23,7 +24,7 @@ function CardRotate({
   const rotateX = useTransform(y, [-100, 100], [60, -60]);
   const rotateY = useTransform(x, [-100, 100], [-60, 60]);
 
-  function handleDragEnd(_: any, info: any) {
+  function handleDragEnd(_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) {
     if (
       Math.abs(info.offset.x) > sensitivity ||
       Math.abs(info.offset.y) > sensitivity
@@ -91,29 +92,28 @@ export default function Stack({
   const shouldDisableDrag = mobileClickOnly && isMobile;
   const shouldEnableClick = sendToBackOnClick || shouldDisableDrag;
 
-  // Tipamos el estado del stack para que no de error
-  const [stack, setStack] = useState<{ id: number; content: ReactNode }[]>(
-    () => {
-      return cards.map((content, index) => ({ id: index + 1, content }));
-    },
-  );
+  const [order, setOrder] = useState<number[]>(() => cards.map((_, i) => i + 1));
+  const rotationOffset = (id: number) => ((id * 13) % 10) - 5;
 
-  useEffect(() => {
-    if (cards.length) {
-      setStack(cards.map((content, index) => ({ id: index + 1, content })));
-    }
-  }, [cards]);
+  const stack = useMemo(() => {
+    const base = cards.map((content, index) => ({ id: index + 1, content }));
+    const pos = (id: number) => {
+      const p = order.indexOf(id);
+      return p === -1 ? id - 1 : p;
+    };
+    return base.sort((a, b) => pos(a.id) - pos(b.id));
+  }, [cards, order]);
 
-  const sendToBack = (id: number) => {
-    setStack((prev) => {
-      const newStack = [...prev];
-      const index = newStack.findIndex((card) => card.id === id);
-      if (index === -1) return prev;
-      const [card] = newStack.splice(index, 1);
-      newStack.unshift(card);
-      return newStack;
+  const sendToBack = useCallback((id: number) => {
+    setOrder((prev) => {
+      const arr = prev.length ? [...prev] : cards.map((_, i) => i + 1);
+      const i = arr.indexOf(id);
+      if (i === -1) return arr;
+      const [x] = arr.splice(i, 1);
+      arr.unshift(x);
+      return arr;
     });
-  };
+  }, [cards]);
 
   useEffect(() => {
     if (autoplay && stack.length > 1 && !isPaused) {
@@ -123,7 +123,7 @@ export default function Stack({
       }, autoplayDelay);
       return () => clearInterval(interval);
     }
-  }, [autoplay, autoplayDelay, stack, isPaused]);
+  }, [autoplay, autoplayDelay, stack, isPaused, sendToBack]);
 
   return (
     <div
@@ -132,7 +132,7 @@ export default function Stack({
       onMouseLeave={() => pauseOnHover && setIsPaused(false)}
     >
       {stack.map((card, index) => {
-        const randomRotate = randomRotation ? Math.random() * 10 - 5 : 0;
+        const randomRotate = randomRotation ? rotationOffset(card.id) : 0;
         return (
           <CardRotate
             key={card.id}
