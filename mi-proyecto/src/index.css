@@ -2,7 +2,6 @@
 
 /* ─── DESIGN SYSTEM ─────────────────────────────────────────── */
 :root {
-<<<<<<< HEAD
   --bg-deep: #080808;
   --bg-card: #111111;
   --bg-raised: #161616;
@@ -27,30 +26,6 @@
 *,
 *::before,
 *::after {
-=======
-  --bg-deep:    #080808;
-  --bg-card:    #111111;
-  --bg-raised:  #161616;
-  --border:     #222222;
-  --border-lit: #333333;
-
-  --red:        #c0392b;
-  --red-bright: #e74c3c;
-  --red-dim:    #7a1f16;
-  --red-glow:   rgba(192, 57, 43, 0.15);
-
-  --white:      #f0ede8;
-  --white-dim:  #9a9590;
-  --white-faint:#3a3835;
-
-  --font-display: 'Unbounded', sans-serif;
-  --font-mono:    'Syne Mono', monospace;
-  --font-body:    'Outfit', sans-serif;
-}
-
-/* ─── RESET ──────────────────────────────────────────────────── */
-*, *::before, *::after {
->>>>>>> 2097040bc4325595185f7e53ccb238f2c5e73e45
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -73,7 +48,6 @@ body {
 
 /* ─── SCROLLBAR ──────────────────────────────────────────────── */
 
-<<<<<<< HEAD
 ::-webkit-scrollbar-track {
   background: var(--bg-deep);
 }
@@ -101,26 +75,3 @@ body::before {
   background-repeat: repeat;
   background-size: 128px 128px;
 }
-=======
-::-webkit-scrollbar-track { background: var(--bg-deep); }
-::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
-
-/* ─── SELECTION ──────────────────────────────────────────────── */
-::selection {
-  background: var(--red);
-  color: var(--white);
-}
-
-/* ─── NOISE TEXTURE OVERLAY ──────────────────────────────────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 128px 128px;
-}
->>>>>>> 2097040bc4325595185f7e53ccb238f2c5e73e45

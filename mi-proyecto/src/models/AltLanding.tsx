@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { TextReveal, AnimatedCounter } from '../ScrollAnimations';
+// Estás en /models, necesitas salir uno (..), entrar en components y luego en effects
+import { TextReveal, AnimatedCounter } from '../components/effects/ScrollAnimations';
+
 
 export default function AltLanding() {
   const [scrollY, setScrollY] = useState(0);
