@@ -4,9 +4,14 @@ import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 
 import './FlowingMenu.css';
-
+interface MenuItem { 
+  link: string; 
+  text: string; 
+  image: string; 
+}
+// 2. La función queda limpia así
 function FlowingMenu({
-  items = [],
+  items = [] as MenuItem[],
   speed = 15,
   textColor = '#fff',
   bgColor = '#060010',
