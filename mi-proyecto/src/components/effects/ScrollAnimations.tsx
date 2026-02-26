@@ -2,6 +2,30 @@ import { useEffect, useRef, useMemo } from 'react';
 import type { ReactNode, CSSProperties } from 'react';
 import { motion, useInView, useAnimation } from 'framer-motion';
 import type { Variants } from 'framer-motion';
+// Sube de 'effects' a 'components', luego de 'components' a 'src', y entra en 'hooks'
+import { useCountUp } from "../../hooks/useCountUp";
+
+// Hook for scroll-triggered counter animation
+
+// Counter component with animation
+interface AnimatedCounterProps {
+    end: number;
+    duration?: number;
+    suffix?: string;
+    className?: string;
+}
+
+export function AnimatedCounter({ end, duration = 2000, suffix = '', className = '' }: AnimatedCounterProps) {
+    const ref = useRef<HTMLDivElement>(null);
+    const isInView = useInView(ref, { once: true });
+    const count = useCountUp(end, duration, isInView);
+    
+    return (
+        <div ref={ref} className={className}>
+            {count}{suffix}
+        </div>
+    );
+}
 
 
 // Text reveal component - reveals text word by word

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useId, FC } from 'react';
 import './CurvedLoop.css';
 
 interface CurvedLoopProps {
@@ -10,59 +10,138 @@ interface CurvedLoopProps {
   className?: string;
 }
 
-export default function CurvedLoop({
-  marqueeText = '✦ NovaTech Solutions · ',
-  speed = 2,
-  curveAmount = -80,
-  direction = 'left',
-  interactive = false,
+const CurvedLoop: FC<CurvedLoopProps> = ({
+  marqueeText = '',
+  speed = 1,
   className = '',
-}: CurvedLoopProps) {
-  const textRef = useRef<SVGTextPathElement>(null);
-  const rafRef = useRef<number>(0);
+  curveAmount = 100,
+  direction = 'left',
+  interactive = true
+}) => {
+  const [spacing, setSpacing] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const uid = useId();
+  
+  const measureRef = useRef<SVGTextElement>(null);
+  const textPathRef = useRef<SVGTextPathElement>(null);
+  const dragRef = useRef(false);
+  const lastXRef = useRef(0);
+  const dirRef = useRef<'left' | 'right'>(direction);
+  // El offset vive en una ref para el movimiento fluido
   const offsetRef = useRef(0);
-  const [pathId] = useState(() => `curve-${Math.random().toString(36).slice(2)}`);
 
-  const repeated = (marqueeText + ' ').repeat(8);
+  const text = useMemo(() => marqueeText.trim() + '\u00A0\u00A0', [marqueeText]);
+
+  const totalText = useMemo(() => {
+    if (!spacing) return text;
+    const repeats = Math.ceil(4000 / spacing) + 4;
+    return Array(repeats).fill(text).join('');
+  }, [text, spacing]);
+
+  const pathId = `curve-${uid}`;
+  const pathD = `M-1000,80 Q720,${80 + curveAmount} 2440,80`;
 
   useEffect(() => {
-    const textEl = textRef.current;
-    if (!textEl) return;
+    if (measureRef.current) {
+      const length = measureRef.current.getComputedTextLength();
+      if (length > 0) {
+        setSpacing(length);
+        const initialOffset = -length * 2;
+        offsetRef.current = initialOffset;
+        // Aplicamos el valor inicial manualmente una sola vez al cargar
+        if (textPathRef.current) {
+          textPathRef.current.setAttribute('startOffset', `${initialOffset}px`);
+        }
+      }
+    }
+  }, [text]);
 
-    const animate = () => {
-      const dir = direction === 'right' ? 1 : -1;
-      offsetRef.current += dir * speed * 0.02;
-      if (offsetRef.current > 100) offsetRef.current -= 100;
-      if (offsetRef.current < 0) offsetRef.current += 100;
-      textEl.setAttribute('startOffset', `${offsetRef.current}%`);
-      rafRef.current = requestAnimationFrame(animate);
+  useEffect(() => {
+    if (!spacing) return;
+
+    let frame: number;
+    const step = () => {
+      if (!dragRef.current && textPathRef.current) {
+        const delta = dirRef.current === 'right' ? speed : -speed;
+        offsetRef.current += delta;
+
+        if (offsetRef.current <= -spacing * 3) offsetRef.current += spacing;
+        else if (offsetRef.current >= -spacing) offsetRef.current -= spacing;
+
+        textPathRef.current.setAttribute('startOffset', `${offsetRef.current}px`);
+      }
+      frame = requestAnimationFrame(step);
     };
 
-    animate();
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [speed, direction, interactive]);
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [spacing, speed]);
 
-  const w = 1200;
-  const h = 160;
-  const mid = h / 2;
-  const d = `M 0 ${mid} Q ${w / 2} ${mid + curveAmount} ${w} ${mid}`;
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!interactive) return;
+    dragRef.current = true;
+    setIsDragging(true);
+    lastXRef.current = e.clientX;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!interactive || !dragRef.current || !textPathRef.current || !spacing) return;
+    const dx = e.clientX - lastXRef.current;
+    lastXRef.current = e.clientX;
+
+    offsetRef.current += dx;
+
+    if (offsetRef.current <= -spacing * 3) offsetRef.current += spacing;
+    if (offsetRef.current >= -spacing) offsetRef.current -= spacing;
+
+    textPathRef.current.setAttribute('startOffset', `${offsetRef.current}px`);
+    dirRef.current = dx > 0 ? 'right' : 'left';
+  };
+
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    dragRef.current = false;
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
 
   return (
-    <div className={`curved-loop ${className}`}>
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        preserveAspectRatio="xMidYMid meet"
-        style={{ width: '100%', height: '120px', display: 'block' }}
-      >
+    <div
+      className="curved-loop-jacket"
+      style={{ 
+        opacity: spacing > 0 ? 1 : 0, 
+        cursor: interactive ? (isDragging ? 'grabbing' : 'grab') : 'default',
+        touchAction: 'none',
+        userSelect: 'none'
+      }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+    >
+      <svg className="curved-loop-svg" viewBox="0 0 1440 200">
         <defs>
-          <path id={pathId} d={d} />
+          <path id={pathId} d={pathD} />
         </defs>
-        <text>
-          <textPath ref={textRef} href={`#${pathId}`} startOffset="0%">
-            {repeated}
-          </textPath>
+        
+        <text ref={measureRef} style={{ fontSize: 'inherit', visibility: 'hidden', position: 'absolute' }}>
+          {text}
         </text>
+
+        {spacing > 0 && (
+          <text className={className} style={{ fontSize: 'inherit', fill: 'currentColor', fontWeight: 'bold' }}>
+            <textPath 
+              ref={textPathRef} 
+              xlinkHref={`#${pathId}`}
+              /* ELIMINADO startOffset={offsetRef.current} para evitar el error */
+            >
+              {totalText}
+            </textPath>
+          </text>
+        )}
       </svg>
     </div>
   );
-}
+};
+
+export default CurvedLoop;
