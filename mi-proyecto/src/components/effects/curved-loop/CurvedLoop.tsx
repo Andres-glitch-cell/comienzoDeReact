@@ -4,10 +4,10 @@ import './CurvedLoop.css';
 interface CurvedLoopProps {
   marqueeText?: string;
   speed?: number;
-  className?: string;
   curveAmount?: number;
   direction?: 'left' | 'right';
   interactive?: boolean;
+  className?: string;
 }
 
 const CurvedLoop: FC<CurvedLoopProps> = ({

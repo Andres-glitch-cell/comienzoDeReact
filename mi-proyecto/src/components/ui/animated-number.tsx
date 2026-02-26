@@ -1,40 +1,26 @@
-import { useEffect } from "react"
-import { motion, MotionValue, useSpring, useTransform } from "motion/react"
+import { useSpring, motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 interface AnimatedNumberProps {
-  value: number
-  mass?: number
-  stiffness?: number
-  damping?: number
-  precision?: number
-  format?: (value: number) => string
-  onAnimationStart?: () => void
-  onAnimationComplete?: () => void
+  value: number;
+  mass?: number;
+  stiffness?: number;
+  damping?: number;
 }
 
-export function AnimatedNumber({
-  value,
-  mass = 0.8,
-  stiffness = 75,
-  damping = 15,
-  precision = 0,
-  format = (num) => num.toLocaleString(),
-  onAnimationStart,
-  onAnimationComplete,
-}: AnimatedNumberProps) {
-  const spring = useSpring(value, { mass, stiffness, damping })
-  const display: MotionValue<string> = useTransform(spring, (current) =>
-    format(parseFloat(current.toFixed(precision)))
-  )
+export function AnimatedNumber({ value, mass = 0.8, stiffness = 75, damping = 15 }: AnimatedNumberProps) {
+  const spring = useSpring(0, { mass, stiffness, damping });
+  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    spring.set(value)
-    if (onAnimationStart) onAnimationStart()
-    const unsubscribe = spring.on("change", () => {
-      if (spring.get() === value && onAnimationComplete) onAnimationComplete()
-    })
-    return () => unsubscribe()
-  }, [spring, value, onAnimationStart, onAnimationComplete])
+    spring.set(value);
+  }, [spring, value]);
 
-  return <motion.span>{display}</motion.span>
+  useEffect(() => {
+    return spring.on('change', (v) => {
+      if (ref.current) ref.current.textContent = Math.round(v).toString();
+    });
+  }, [spring]);
+
+  return <motion.span ref={ref}>0</motion.span>;
 }
