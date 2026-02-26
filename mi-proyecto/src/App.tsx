@@ -4,7 +4,7 @@ import { motion, type Variants, type Transition, useScroll, useSpring } from 'fr
 import { useEffect, useRef } from 'react';
 import DomeGallery from '@/components/effects/dome-gallery/DomeGallery';
 import CurvedLoop from '@/components/effects/curved-loop/CurvedLoop';
-import Aurora from '@/components/effects/aurora/Aurora';
+import ElectricBorder from './components/effects/electric-border/ElectricBorder';
 import FlowingMenu from '@/components/effects/flowing-menu/FlowingMenu';
 import Stack from '@/components/layout/stack/Stack';
 import StatsSection from '@/components/layout/stats-section/StatsSection';
