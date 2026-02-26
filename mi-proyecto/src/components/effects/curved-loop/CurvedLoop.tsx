@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useMemo, useId, FC, PointerEvent } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useId, FC } from 'react';
 import './CurvedLoop.css';
 
 interface CurvedLoopProps {
@@ -12,120 +12,129 @@ interface CurvedLoopProps {
 
 const CurvedLoop: FC<CurvedLoopProps> = ({
   marqueeText = '',
-  speed = 2,
-  className,
-  curveAmount = 400,
+  speed = 1,
+  className = '',
+  curveAmount = 100,
   direction = 'left',
   interactive = true
 }) => {
-  const text = useMemo(() => {
-    const hasTrailing = /\s|\u00A0$/.test(marqueeText);
-    return (hasTrailing ? marqueeText.replace(/\s+$/, '') : marqueeText) + '\u00A0';
-  }, [marqueeText]);
-
-  const measureRef = useRef<SVGTextElement | null>(null);
-  const textPathRef = useRef<SVGTextPathElement | null>(null);
-  const pathRef = useRef<SVGPathElement | null>(null);
   const [spacing, setSpacing] = useState(0);
-  const [isDragging, setIsDragging] = useState(false); // Estado para el cursor
+  const [isDragging, setIsDragging] = useState(false);
   const uid = useId();
-  const pathId = `curve-${uid}`;
-  const pathD = `M-100,40 Q500,${40 + curveAmount} 1540,40`;
-
+  
+  const measureRef = useRef<SVGTextElement>(null);
+  const textPathRef = useRef<SVGTextPathElement>(null);
   const dragRef = useRef(false);
   const lastXRef = useRef(0);
   const dirRef = useRef<'left' | 'right'>(direction);
-  const velRef = useRef(0);
+  // El offset vive en una ref para el movimiento fluido
+  const offsetRef = useRef(0);
 
-  const textLength = spacing;
-  const totalText = textLength
-    ? Array(Math.ceil(1800 / textLength) + 2)
-        .fill(text)
-        .join('')
-    : text;
-  const ready = spacing > 0;
-  const initialOffset = spacing > 0 ? -spacing : 0; // Calcular offset inicial de forma derivada
+  const text = useMemo(() => marqueeText.trim() + '\u00A0\u00A0', [marqueeText]);
+
+  const totalText = useMemo(() => {
+    if (!spacing) return text;
+    const repeats = Math.ceil(4000 / spacing) + 4;
+    return Array(repeats).fill(text).join('');
+  }, [text, spacing]);
+
+  const pathId = `curve-${uid}`;
+  const pathD = `M-1000,80 Q720,${80 + curveAmount} 2440,80`;
 
   useEffect(() => {
-    if (measureRef.current) setSpacing(measureRef.current.getComputedTextLength());
-  }, [text, className]);
+    if (measureRef.current) {
+      const length = measureRef.current.getComputedTextLength();
+      if (length > 0) {
+        setSpacing(length);
+        const initialOffset = -length * 2;
+        offsetRef.current = initialOffset;
+        // Aplicamos el valor inicial manualmente una sola vez al cargar
+        if (textPathRef.current) {
+          textPathRef.current.setAttribute('startOffset', `${initialOffset}px`);
+        }
+      }
+    }
+  }, [text]);
 
   useEffect(() => {
     if (!spacing) return;
-    if (textPathRef.current) {
-      textPathRef.current.setAttribute('startOffset', initialOffset + 'px');
-    }
-  }, [spacing, initialOffset]);
 
-  useEffect(() => {
-    if (!spacing || !ready) return;
-    let frame = 0;
+    let frame: number;
     const step = () => {
       if (!dragRef.current && textPathRef.current) {
         const delta = dirRef.current === 'right' ? speed : -speed;
-        const currentOffset = parseFloat(textPathRef.current.getAttribute('startOffset') || '0');
-        let newOffset = currentOffset + delta;
-        const wrapPoint = spacing;
-        if (newOffset <= -wrapPoint) newOffset += wrapPoint;
-        if (newOffset > 0) newOffset -= wrapPoint;
-        textPathRef.current.setAttribute('startOffset', newOffset + 'px');
+        offsetRef.current += delta;
+
+        if (offsetRef.current <= -spacing * 3) offsetRef.current += spacing;
+        else if (offsetRef.current >= -spacing) offsetRef.current -= spacing;
+
+        textPathRef.current.setAttribute('startOffset', `${offsetRef.current}px`);
       }
       frame = requestAnimationFrame(step);
     };
+
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [spacing, speed, ready]);
+  }, [spacing, speed]);
 
-  const onPointerDown = (e: PointerEvent) => {
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!interactive) return;
     dragRef.current = true;
-    setIsDragging(true); // Actualizar estado
+    setIsDragging(true);
     lastXRef.current = e.clientX;
-    velRef.current = 0;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
-  const onPointerMove = (e: PointerEvent) => {
-    if (!interactive || !dragRef.current || !textPathRef.current) return;
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!interactive || !dragRef.current || !textPathRef.current || !spacing) return;
     const dx = e.clientX - lastXRef.current;
     lastXRef.current = e.clientX;
-    velRef.current = dx;
-    const currentOffset = parseFloat(textPathRef.current.getAttribute('startOffset') || '0');
-    let newOffset = currentOffset + dx;
-    const wrapPoint = spacing;
-    if (newOffset <= -wrapPoint) newOffset += wrapPoint;
-    if (newOffset > 0) newOffset -= wrapPoint;
-    textPathRef.current.setAttribute('startOffset', newOffset + 'px');
+
+    offsetRef.current += dx;
+
+    if (offsetRef.current <= -spacing * 3) offsetRef.current += spacing;
+    if (offsetRef.current >= -spacing) offsetRef.current -= spacing;
+
+    textPathRef.current.setAttribute('startOffset', `${offsetRef.current}px`);
+    dirRef.current = dx > 0 ? 'right' : 'left';
   };
 
-  const endDrag = () => {
-    if (!interactive) return;
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     dragRef.current = false;
-    setIsDragging(false); // Actualizar estado
-    dirRef.current = velRef.current > 0 ? 'right' : 'left';
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
   };
-
-  const cursorStyle = interactive ? (isDragging ? 'grabbing' : 'grab') : 'auto';
 
   return (
     <div
       className="curved-loop-jacket"
-      style={{ visibility: ready ? 'visible' : 'hidden', cursor: cursorStyle }}
+      style={{ 
+        opacity: spacing > 0 ? 1 : 0, 
+        cursor: interactive ? (isDragging ? 'grabbing' : 'grab') : 'default',
+        touchAction: 'none',
+        userSelect: 'none'
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
-      onPointerLeave={endDrag}
+      onPointerCancel={endDrag}
     >
-      <svg className="curved-loop-svg" viewBox="0 0 1440 120">
-        <text ref={measureRef} xmlSpace="preserve" style={{ visibility: 'hidden', opacity: 0, pointerEvents: 'none' }}>
+      <svg className="curved-loop-svg" viewBox="0 0 1440 200">
+        <defs>
+          <path id={pathId} d={pathD} />
+        </defs>
+        
+        <text ref={measureRef} style={{ fontSize: 'inherit', visibility: 'hidden', position: 'absolute' }}>
           {text}
         </text>
-        <defs>
-          <path ref={pathRef} id={pathId} d={pathD} fill="none" stroke="transparent" />
-        </defs>
-        {ready && (
-          <text fontWeight="bold" xmlSpace="preserve" className={className}>
-            <textPath ref={textPathRef} href={`#${pathId}`} startOffset={initialOffset + 'px'} xmlSpace="preserve">
+
+        {spacing > 0 && (
+          <text className={className} style={{ fontSize: 'inherit', fill: 'currentColor', fontWeight: 'bold' }}>
+            <textPath 
+              ref={textPathRef} 
+              xlinkHref={`#${pathId}`}
+              /* ELIMINADO startOffset={offsetRef.current} para evitar el error */
+            >
               {totalText}
             </textPath>
           </text>

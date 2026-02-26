@@ -2,7 +2,8 @@ import { useEffect, useRef, useMemo } from 'react';
 import type { ReactNode, CSSProperties } from 'react';
 import { motion, useInView, useAnimation } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { useCountUp } from './hooks/useCountUp';
+// Sube de 'effects' a 'components', luego de 'components' a 'src', y entra en 'hooks'
+import { useCountUp } from "../../hooks/useCountUp";
 
 // Hook for scroll-triggered counter animation
 

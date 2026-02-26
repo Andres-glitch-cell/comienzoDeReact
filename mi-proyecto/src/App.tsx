@@ -28,12 +28,66 @@ const menuItems = [
 ] as FlowingMenuItem[];
 
 const services = [
-  { id: '01', icon: '🌐', title: 'Desarrollo Web',          desc: 'Sitios modernos, responsivos y optimizados para SEO desde cero.' },
-  { id: '02', icon: '📱', title: 'Apps Móviles',            desc: 'Nativas y multiplataforma para iOS y Android.' },
-  { id: '03', icon: '🎨', title: 'Diseño UI/UX',            desc: 'Interfaces intuitivas con experiencias de usuario excepcionales.' },
-  { id: '04', icon: '☁️', title: 'Cloud & DevOps',          desc: 'Infraestructura escalable y despliegue continuo en la nube.' },
-  { id: '05', icon: '🤖', title: 'Inteligencia Artificial', desc: 'Soluciones de IA y ML para automatizar procesos clave.' },
-  { id: '06', icon: '💡', title: 'Consultoría Tech',        desc: 'Asesoramiento estratégico para tu transformación digital.' },
+  { 
+    id: '01', 
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+    ), 
+    title: 'Desarrollo Web', 
+    desc: 'Sitios modernos, responsivos y optimizados para SEO desde cero.' 
+  },
+  { 
+    id: '02', 
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+      </svg>
+    ), 
+    title: 'Apps Móviles', 
+    desc: 'Nativas y multiplataforma para iOS y Android.' 
+  },
+  { 
+    id: '03', 
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.5 1.5"/><path d="M7 11l5-5"/>
+      </svg>
+    ), 
+    title: 'Diseño UI/UX', 
+    desc: 'Interfaces intuitivas con experiencias de usuario excepcionales.' 
+  },
+  { 
+    id: '04', 
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.5 19l4.5-4.5L17.5 10"/><path d="M6.5 5L2 9.5 6.5 14"/><path d="M13 2l-2 20"/>
+      </svg>
+    ), 
+    title: 'Cloud & DevOps', 
+    desc: 'Infraestructura escalable y despliegue continuo en la nube.' 
+  },
+  { 
+    id: '05', 
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 8V4H8"/><rect x="8" y="8" width="8" height="8" rx="1" /><path d="M16 8V4h4"/><path d="M8 16v4H4"/><path d="M16 16v4h4"/>
+      </svg>
+    ), 
+    title: 'Inteligencia Artificial', 
+    desc: 'Soluciones de IA y ML para automatizar procesos clave.' 
+  },
+  { 
+    id: '06', 
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/>
+      </svg>
+    ), 
+    title: 'Consultoría Tech', 
+    desc: 'Asesoramiento estratégico para tu transformación digital.' 
+  },
 ];
 
 // ─── ANIMATION VARIANTS ──────────────────────────────────────────
@@ -151,7 +205,7 @@ export default function App() {
           className="hero__eyebrow"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 2.6, delay: 1.3 }}
         >
           <div className="hero__eyebrow-line" />
           <span className="hero__eyebrow-text">Soluciones Tecnológicas · 2026</span>
@@ -163,7 +217,7 @@ export default function App() {
             <motion.em
               initial={{ opacity: 0, x: -60 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, ease: cubicEase, delay: 0.5 }}
+              transition={{ duration: 4.7, ease: cubicEase, delay: 3.5 }}
             >
               SIN
             </motion.em>
@@ -173,9 +227,10 @@ export default function App() {
               className="outline"
               initial={{ opacity: 0, x: 60 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, ease: cubicEase, delay: 0.7 }}
+              transition={{ duration: 2.7, ease: cubicEase, delay: 2.7 }}
             >
-              LÍMITES
+                LÍMITES
+                
             </motion.span>
           </div>
         </h1>
@@ -221,14 +276,24 @@ export default function App() {
         <StatsSection />
       </motion.div>
 
-      {/* ── MARQUEE ── */}
-      <motion.section className="marquee-section" variants={scaleIn} {...inView}>
-        <CurvedLoop
-          marqueeText="✦ NOVATECH · INNOVACIÓN · PRECISIÓN · TECNOLOGÍA · DISEÑO · "
-          speed={1.2} curveAmount={-120} direction="right" interactive
-          className="curved-loop-display"
-        />
-      </motion.section>
+{/* ── MARQUEE ── */}
+<motion.section 
+  className="marquee-section" 
+  variants={scaleIn} 
+  {...inView}
+  style={{ margin: '4rem 0' }} // Añade margen extra aquí si quieres más separación
+>
+  <div className="curved-loop-jacket">
+    <CurvedLoop
+      marqueeText="✦ NOVATECH · INNOVACIÓN · PRECISIÓN · TECNOLOGÍA · DISEÑO · "
+      speed={0.5} 
+      curveAmount={-80} // Un valor menor hace que la curva sea menos pronunciada y parezca más centrada
+      direction="right" 
+      interactive
+      className="curved-loop-display"
+    />
+  </div>
+</motion.section>
 
       {/* ── SERVICES ── */}
       <section className="services-section" id="services">
@@ -320,7 +385,7 @@ export default function App() {
             <motion.div className="electric-content" variants={fadeUp} {...inView}>
               <h3>¿Empezamos algo grande?</h3>
               <p>Cuéntanos tu proyecto y encontraremos la solución tecnológica<br />que tu negocio necesita.</p>
-              <a href="mailto:hola@novatech.com" className="btn-primary">Contactar ahora</a>
+              <a href="mailto:afernandezs.iesjc@gmail.com" className="btn-primary">Contactar ahora</a>
             </motion.div>
           </ElectricBorder>
         </div>
